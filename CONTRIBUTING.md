@@ -1,10 +1,10 @@
 # Contributing
 
-Thanks for your interest in contributing to Foreman.
+Thanks for your interest in contributing to Playbook.
 
 ## Scope
 
-This repo holds the Foreman code (CLI + engine, and eventually daemon mode). Architecture, ADRs, and roadmap live in [`foreman-lab/handbook`](https://github.com/foreman-lab/handbook).
+This repo holds the Playbook code (CLI + engine, and eventually daemon mode). Architecture, ADRs, and roadmap live in [`foreman-lab/handbook`](https://github.com/foreman-lab/handbook).
 
 ## Before opening a PR
 

@@ -1,24 +1,29 @@
-# foreman
+# playbook
 
-MCP harness for AI coding agents. Single-user product: runs a 4-node state machine (init → plan → work → evaluate) that orchestrates a coding agent against a playbook. Ships as one `foreman` CLI binary with two modes:
+MCP harness for AI coding agents. Single-user product: runs a 4-node state machine (init → plan → work → evaluate) per NODE, orchestrating a coding agent through a user-authored workflow (a playbook). Ships as one `playbook` CLI binary with two modes:
 
 - **Solo mode** — engine runs in-process, single project, foreground.
 - **Daemon mode** — engine runs as a local background service, one user with multiple concurrent projects/sessions. *(Coming in a later milestone.)*
 
-Higher tiers (`team` for LAN multi-user, `cloud` for hosted SaaS) will be separate repos that speak Foreman's MCP/IPC protocol — they do not import Foreman's code. See the [Docker model](https://github.com/foreman-lab/handbook/blob/main/roadmap.md) for the rationale.
+Higher tiers (`team` for LAN multi-user, `cloud` for hosted SaaS) will be separate repos that speak Playbook's MCP/IPC protocol — they do not import Playbook's code. See the [Docker model](https://github.com/foreman-lab/handbook/blob/main/foundations.md) (P7, D20) for the rationale.
+
+## Vocabulary
+
+Two meanings of "playbook":
+- **Playbook** (the product) — this repo; the CLI binary and engine.
+- **playbook** (a concept) — the outer workflow, a NODE tree the user authors for a task.
+
+A **craft** is the inner practice (domain how-to) a single NODE invokes: TDD, refactor, review, and so on. A playbook references crafts; crafts do not reference playbooks. See handbook [foundations D7](https://github.com/foreman-lab/handbook/blob/main/foundations.md).
 
 ## Status
 
-**Pre-alpha.** Repo is freshly seeded; code has not been written yet. The first milestone (bootstrap + core state machine) is being planned.
+**Pre-alpha.** Repo is freshly seeded; code has not been written yet. The first milestone (`0.1.0 — Hello, agent`) is being planned.
 
 ## Architecture
 
 All architectural material lives in the [handbook](https://github.com/foreman-lab/handbook):
 
-- [`foundations.md`](https://github.com/foreman-lab/handbook/blob/main/foundations.md) — principles (P-1..P-10) and decisions (D-1..D-20)
-- [`architecture.md`](https://github.com/foreman-lab/handbook/blob/main/architecture.md) — state machine, layers, signal protocol
-- [ADR 0007](https://github.com/foreman-lab/handbook/blob/main/adr/0007-domain-blind-core.md) — domain-blind core: foreman composes prompt sections; agents render
-- [ADR 0003](https://github.com/foreman-lab/handbook/blob/main/adr/0003-state-machine-scope-and-mcp-surface.md) — 2-tool MCP surface (`foreman__status`, `foreman__step`)
+- [`foundations.md`](https://github.com/foreman-lab/handbook/blob/main/foundations.md) — principles (B1–B3, P1–P10) and decisions (D1–D22)
 
 ## Install
 
