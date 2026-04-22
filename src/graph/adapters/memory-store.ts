@@ -10,7 +10,8 @@
  * (or after load) do not corrupt stored state.
  */
 
-import { ConcurrencyConflictError } from "../errors.js";
+import { isDeepStrictEqual } from "node:util";
+import { ConcurrencyConflictError, GraphImmutableError } from "../errors.js";
 import type { Store } from "../store.js";
 import type { Graph, Machine } from "../types.js";
 
@@ -19,7 +20,12 @@ export class MemoryStore implements Store {
   readonly #machines = new Map<string, Machine>();
 
   async saveGraph(graph: Graph): Promise<void> {
-    this.#graphs.set(graphKey(graph.id, graph.version), structuredClone(graph));
+    const key = graphKey(graph.id, graph.version);
+    const existing = this.#graphs.get(key);
+    if (existing !== undefined && !isDeepStrictEqual(existing, graph)) {
+      throw new GraphImmutableError(graph.id, graph.version);
+    }
+    this.#graphs.set(key, structuredClone(graph));
   }
 
   async loadGraph(id: string, version: string): Promise<Graph | null> {

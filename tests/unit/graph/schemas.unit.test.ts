@@ -60,6 +60,16 @@ describe("stateSchema", () => {
   it("rejects empty id", () => {
     expect(stateSchema.safeParse({ id: "" }).success).toBe(false);
   });
+
+  it("rejects an id containing the NUL control character", () => {
+    expect(stateSchema.safeParse({ id: "A\u0000B" }).success).toBe(false);
+  });
+
+  it("rejects an id containing newline / tab / DEL", () => {
+    for (const ch of ["\n", "\t", "\u0007", "\u007F"]) {
+      expect(stateSchema.safeParse({ id: `bad${ch}id` }).success).toBe(false);
+    }
+  });
 });
 
 describe("transitionSchema", () => {
@@ -69,6 +79,60 @@ describe("transitionSchema", () => {
 
   it("rejects empty event name", () => {
     expect(transitionSchema.safeParse({ from: "A", event: "", to: "B" }).success).toBe(false);
+  });
+
+  it("rejects an event name containing control characters", () => {
+    expect(transitionSchema.safeParse({ from: "A", event: "go\u0000", to: "B" }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("identifier hygiene (control characters)", () => {
+  it("rejects graph.id with control char", () => {
+    const bad = {
+      id: "lifecycle\u0000",
+      version: "1.0.0",
+      initialState: "A",
+      states: [{ id: "A" }],
+      transitions: [],
+    };
+    expect(graphSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("rejects graph.version with control char", () => {
+    const bad = {
+      id: "lifecycle",
+      version: "1.0.0\u001F",
+      initialState: "A",
+      states: [{ id: "A" }],
+      transitions: [],
+    };
+    expect(graphSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("rejects machine fields with control chars", () => {
+    expect(
+      machineSchema.safeParse({
+        id: "m\u00001",
+        graphId: "lifecycle",
+        graphVersion: "1.0.0",
+        revision: 0,
+        state: "A",
+        context: {},
+        meta: {},
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects event.type with control char", () => {
+    expect(eventSchema.safeParse({ type: "go\u0001", payload: {} }).success).toBe(false);
+  });
+
+  it("ALLOWS unicode letters and emoji in identifiers (only control chars are rejected)", () => {
+    expect(stateSchema.safeParse({ id: "Πλάνο" }).success).toBe(true);
+    expect(stateSchema.safeParse({ id: "状态" }).success).toBe(true);
+    expect(stateSchema.safeParse({ id: "🚀" }).success).toBe(true);
   });
 });
 

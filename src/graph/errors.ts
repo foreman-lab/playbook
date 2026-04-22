@@ -54,6 +54,21 @@ export class ConcurrencyConflictError extends GraphError {
   }
 }
 
+export class GraphImmutableError extends GraphError {
+  readonly graphId: string;
+  readonly graphVersion: string;
+
+  constructor(graphId: string, graphVersion: string) {
+    super(
+      "ERR_GRAPH_IMMUTABLE",
+      `Graph "${graphId}@${graphVersion}" is already saved with different content. Bump the version to publish a change.`,
+    );
+    this.name = "GraphImmutableError";
+    this.graphId = graphId;
+    this.graphVersion = graphVersion;
+  }
+}
+
 export class InvalidGraphError extends GraphError {
   readonly issues: ReadonlyArray<string>;
 

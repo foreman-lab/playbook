@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   ConcurrencyConflictError,
   type Graph,
+  GraphImmutableError,
   type Machine,
   type Store,
 } from "../../../src/graph/index.js";
@@ -67,9 +68,21 @@ export function runStoreContract(name: string, makeStore: () => Store): void {
         expect(await store.loadGraph(sampleGraph.id, "2.0.0")).toEqual(v2);
       });
 
-      it("second saveGraph with the same key does not throw and is observable on load", async () => {
+      it("second saveGraph with the same key and SAME content is a no-op", async () => {
         await store.saveGraph(sampleGraph);
         await expect(store.saveGraph(sampleGraph)).resolves.not.toThrow();
+        const loaded = await store.loadGraph(sampleGraph.id, sampleGraph.version);
+        expect(loaded).toEqual(sampleGraph);
+      });
+
+      it("second saveGraph with the same key and DIFFERENT content throws GraphImmutableError", async () => {
+        await store.saveGraph(sampleGraph);
+        const drifted: Graph = {
+          ...sampleGraph,
+          states: [...sampleGraph.states, { id: "Extra" }],
+        };
+        await expect(store.saveGraph(drifted)).rejects.toBeInstanceOf(GraphImmutableError);
+        // Original content remains intact:
         const loaded = await store.loadGraph(sampleGraph.id, sampleGraph.version);
         expect(loaded).toEqual(sampleGraph);
       });

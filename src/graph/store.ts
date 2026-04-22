@@ -22,7 +22,14 @@
 import type { Graph, Machine } from "./types.js";
 
 export interface Store {
-  /** Save a graph. Idempotent on (graph.id, graph.version). */
+  /**
+   * Save a graph. Idempotent on (graph.id, graph.version) — saving the SAME
+   * content under the same key is a no-op. Saving DIFFERENT content under
+   * the same key throws `GraphImmutableError`. Bump the version to publish
+   * a change.
+   *
+   * @throws {GraphImmutableError} when content differs for an existing key.
+   */
   saveGraph(graph: Graph): Promise<void>;
 
   /** Load a graph by (id, version). Returns null if not found. */

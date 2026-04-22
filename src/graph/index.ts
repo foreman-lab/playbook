@@ -6,6 +6,7 @@ export type { Event, Graph, Machine, State, StateId, Transition } from "./types.
 export {
   ConcurrencyConflictError,
   GraphError,
+  GraphImmutableError,
   InvalidGraphError,
   NoMatchingTransitionError,
   TerminalStateError,
