@@ -1,3 +1,23 @@
 // Graph module — public surface (the state-machine engine).
-// Populated in subsequent sprints per handbook/architecture.md.
-export const GRAPH_MODULE_VERSION = "0.0.0";
+// See: https://github.com/foreman-lab/handbook/blob/main/architecture.md
+
+export type { Event, Graph, Machine, State, StateId, Transition } from "./types.js";
+
+export {
+  GraphError,
+  InvalidGraphError,
+  NoMatchingTransitionError,
+  TerminalStateError,
+  UnknownStateError,
+} from "./errors.js";
+
+export {
+  eventSchema,
+  graphSchema,
+  machineSchema,
+  stateSchema,
+  transitionSchema,
+  validateGraph,
+} from "./schemas.js";
+
+export { transition } from "./transition.js";
