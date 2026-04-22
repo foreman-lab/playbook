@@ -62,6 +62,7 @@ export const graphSchema = z
         path: ["initialState"],
       });
     }
+    const ruleKeys = new Set<string>();
     for (let i = 0; i < def.transitions.length; i++) {
       const t = def.transitions[i]!;
       if (!seen.has(t.from)) {
@@ -78,6 +79,15 @@ export const graphSchema = z
           path: ["transitions", i, "to"],
         });
       }
+      const key = `${t.from}\u0000${t.event}`;
+      if (ruleKeys.has(key)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `duplicate transition rule for (from "${t.from}", event "${t.event}")`,
+          path: ["transitions", i],
+        });
+      }
+      ruleKeys.add(key);
     }
   });
 
