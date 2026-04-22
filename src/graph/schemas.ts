@@ -9,14 +9,31 @@ import { z } from "zod";
 import { InvalidGraphError } from "./errors.js";
 import type { Graph } from "./types.js";
 
-const stateIdSchema = z.string().min(1);
+/**
+ * Identifier strings (StateId, graph.id, graph.version, machine.id, event.type)
+ * MUST NOT contain ASCII control characters (U+0000–U+001F, U+007F).
+ *
+ * Why: stores commonly use these strings as keys, sometimes via composite
+ * "id\u0000version" join formats. A control char inside a user-supplied id
+ * would silently collide with adjacent keys. Free-form fields (labels, meta
+ * values) are intentionally NOT subject to this restriction.
+ */
+// eslint-disable-next-line no-control-regex -- whole point of the regex is to detect control chars
+const NO_CONTROL_CHARS = /^[^\u0000-\u001F\u007F]+$/;
+
+const identifierSchema = z
+  .string()
+  .min(1)
+  .regex(NO_CONTROL_CHARS, "must not contain ASCII control characters");
+
+const stateIdSchema = identifierSchema;
 
 /**
  * Event envelope is open by design: callers MAY include extra fields
  * (timestamp, correlationId, source). The engine reads only `type` + `payload`.
  */
 export const eventSchema = z.looseObject({
-  type: z.string().min(1),
+  type: identifierSchema,
   payload: z.unknown(),
 });
 
@@ -29,7 +46,7 @@ export const stateSchema = z.object({
 
 export const transitionSchema = z.object({
   from: stateIdSchema,
-  event: z.string().min(1),
+  event: identifierSchema,
   to: stateIdSchema,
   label: z.string().min(1).optional(),
   meta: z.record(z.string(), z.unknown()).optional(),
@@ -37,8 +54,8 @@ export const transitionSchema = z.object({
 
 export const graphSchema = z
   .object({
-    id: z.string().min(1),
-    version: z.string().min(1),
+    id: identifierSchema,
+    version: identifierSchema,
     initialState: stateIdSchema,
     states: z.array(stateSchema).min(1),
     transitions: z.array(transitionSchema),
@@ -92,9 +109,9 @@ export const graphSchema = z
   });
 
 export const machineSchema = z.object({
-  id: z.string().min(1),
-  graphId: z.string().min(1),
-  graphVersion: z.string().min(1),
+  id: identifierSchema,
+  graphId: identifierSchema,
+  graphVersion: identifierSchema,
   revision: z.number().int().nonnegative(),
   state: stateIdSchema,
   context: z.record(z.string(), z.unknown()),

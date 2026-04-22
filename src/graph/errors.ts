@@ -37,6 +37,38 @@ export class UnknownStateError extends GraphError {
   }
 }
 
+export class ConcurrencyConflictError extends GraphError {
+  readonly machineId: string;
+  readonly attemptedRevision: number;
+  readonly storedRevision: number | null;
+
+  constructor(machineId: string, attemptedRevision: number, storedRevision: number | null) {
+    super(
+      "ERR_CONCURRENCY_CONFLICT",
+      `Concurrency conflict for machine "${machineId}": attempted revision ${attemptedRevision}, stored revision ${storedRevision ?? "(none)"}.`,
+    );
+    this.name = "ConcurrencyConflictError";
+    this.machineId = machineId;
+    this.attemptedRevision = attemptedRevision;
+    this.storedRevision = storedRevision;
+  }
+}
+
+export class GraphImmutableError extends GraphError {
+  readonly graphId: string;
+  readonly graphVersion: string;
+
+  constructor(graphId: string, graphVersion: string) {
+    super(
+      "ERR_GRAPH_IMMUTABLE",
+      `Graph "${graphId}@${graphVersion}" is already saved with different content. Bump the version to publish a change.`,
+    );
+    this.name = "GraphImmutableError";
+    this.graphId = graphId;
+    this.graphVersion = graphVersion;
+  }
+}
+
 export class InvalidGraphError extends GraphError {
   readonly issues: ReadonlyArray<string>;
 
