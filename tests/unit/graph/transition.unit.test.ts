@@ -7,7 +7,7 @@ import {
   TerminalStateError,
   transition,
   UnknownStateError,
-} from "../../src/graph/index.js";
+} from "../../../src/graph/index.js";
 
 const lifecycle: Graph = {
   id: "lifecycle",
