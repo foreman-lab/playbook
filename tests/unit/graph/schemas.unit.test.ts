@@ -7,7 +7,7 @@ import {
   stateSchema,
   transitionSchema,
   validateGraph,
-} from "../../src/graph/index.js";
+} from "../../../src/graph/index.js";
 
 describe("eventSchema", () => {
   it("accepts a minimal event", () => {
