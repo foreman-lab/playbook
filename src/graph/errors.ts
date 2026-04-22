@@ -37,6 +37,23 @@ export class UnknownStateError extends GraphError {
   }
 }
 
+export class ConcurrencyConflictError extends GraphError {
+  readonly machineId: string;
+  readonly attemptedRevision: number;
+  readonly storedRevision: number | null;
+
+  constructor(machineId: string, attemptedRevision: number, storedRevision: number | null) {
+    super(
+      "ERR_CONCURRENCY_CONFLICT",
+      `Concurrency conflict for machine "${machineId}": attempted revision ${attemptedRevision}, stored revision ${storedRevision ?? "(none)"}.`,
+    );
+    this.name = "ConcurrencyConflictError";
+    this.machineId = machineId;
+    this.attemptedRevision = attemptedRevision;
+    this.storedRevision = storedRevision;
+  }
+}
+
 export class InvalidGraphError extends GraphError {
   readonly issues: ReadonlyArray<string>;
 

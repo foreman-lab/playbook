@@ -4,12 +4,15 @@
 export type { Event, Graph, Machine, State, StateId, Transition } from "./types.js";
 
 export {
+  ConcurrencyConflictError,
   GraphError,
   InvalidGraphError,
   NoMatchingTransitionError,
   TerminalStateError,
   UnknownStateError,
 } from "./errors.js";
+
+export type { Store } from "./store.js";
 
 export {
   eventSchema,
