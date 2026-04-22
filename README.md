@@ -3,13 +3,14 @@
 MCP harness for AI coding agents. Single-user product: runs a 4-node state machine (init → plan → work → evaluate) per NODE, orchestrating a coding agent through a user-authored workflow (a playbook). Ships as one `playbook` CLI binary with two modes:
 
 - **Solo mode** — engine runs in-process, single project, foreground.
-- **Daemon mode** — engine runs as a local background service, one user with multiple concurrent projects/sessions. *(Coming in a later milestone.)*
+- **Daemon mode** — engine runs as a local background service, one user with multiple concurrent projects/sessions. _(Coming in a later milestone.)_
 
 Higher tiers (`team` for LAN multi-user, `cloud` for hosted SaaS) will be separate repos that speak Playbook's MCP/IPC protocol — they do not import Playbook's code. See the [Docker model](https://github.com/foreman-lab/handbook/blob/main/foundations.md) (P7, D20) for the rationale.
 
 ## Vocabulary
 
 Two meanings of "playbook":
+
 - **Playbook** (the product) — this repo; the CLI binary and engine.
 - **playbook** (a concept) — the outer workflow, a NODE tree the user authors for a task.
 
