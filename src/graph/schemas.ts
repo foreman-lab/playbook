@@ -15,12 +15,10 @@ const stateIdSchema = z.string().min(1);
  * Event envelope is open by design: callers MAY include extra fields
  * (timestamp, correlationId, source). The engine reads only `type` + `payload`.
  */
-export const eventSchema = z
-  .object({
-    type: z.string().min(1),
-    payload: z.unknown(),
-  })
-  .passthrough();
+export const eventSchema = z.looseObject({
+  type: z.string().min(1),
+  payload: z.unknown(),
+});
 
 export const stateSchema = z.object({
   id: stateIdSchema,
@@ -50,7 +48,7 @@ export const graphSchema = z
     for (const state of def.states) {
       if (seen.has(state.id)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Duplicate state id "${state.id}"`,
           path: ["states"],
         });
@@ -59,7 +57,7 @@ export const graphSchema = z
     }
     if (!seen.has(def.initialState)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `initialState "${def.initialState}" not found in states[]`,
         path: ["initialState"],
       });
@@ -68,14 +66,14 @@ export const graphSchema = z
       const t = def.transitions[i]!;
       if (!seen.has(t.from)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `transitions[${i}].from "${t.from}" not found in states[]`,
           path: ["transitions", i, "from"],
         });
       }
       if (!seen.has(t.to)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `transitions[${i}].to "${t.to}" not found in states[]`,
           path: ["transitions", i, "to"],
         });

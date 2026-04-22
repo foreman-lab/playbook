@@ -160,6 +160,24 @@ describe("transition — terminal rejection", () => {
       expect(e.message).toContain("Done");
     }
   });
+
+  it("terminal rejection takes precedence over a matching transition rule", () => {
+    // A graph where the terminal state ALSO has an outgoing rule for `go`.
+    // Terminality must win, regardless of rule presence. Guards I-3 against
+    // a refactor that re-orders the checks in `transition`.
+    const trapped: Graph = {
+      id: "trapped",
+      version: "1.0.0",
+      initialState: "A",
+      states: [{ id: "A" }, { id: "End", terminal: true }],
+      transitions: [
+        { from: "A", event: "go", to: "End" },
+        { from: "End", event: "go", to: "A" },
+      ],
+    };
+    const m = makeMachine({ state: "End", graphId: trapped.id, graphVersion: trapped.version });
+    expect(() => transition(m, event("go"), trapped)).toThrow(TerminalStateError);
+  });
 });
 
 describe("transition — unknown state", () => {
