@@ -1,11 +1,11 @@
 // Graph module — public surface (the state-machine engine).
 // See: https://github.com/foreman-lab/handbook/blob/main/architecture.md
 
-export type { Event, Machine, MachineDefinition, State, StateId, Transition } from "./types.js";
+export type { Event, Graph, Machine, State, StateId, Transition } from "./types.js";
 
 export {
   GraphError,
-  InvalidDefinitionError,
+  InvalidGraphError,
   NoMatchingTransitionError,
   TerminalStateError,
   UnknownStateError,
@@ -13,11 +13,11 @@ export {
 
 export {
   eventSchema,
-  machineDefinitionSchema,
+  graphSchema,
   machineSchema,
   stateSchema,
   transitionSchema,
-  validateMachineDefinition,
+  validateGraph,
 } from "./schemas.js";
 
 export { transition } from "./transition.js";

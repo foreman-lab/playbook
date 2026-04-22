@@ -32,20 +32,17 @@ export class TerminalStateError extends GraphError {
 
 export class UnknownStateError extends GraphError {
   constructor(state: string) {
-    super(
-      "ERR_UNKNOWN_STATE",
-      `Machine state "${state}" is not present in the supplied definition.`,
-    );
+    super("ERR_UNKNOWN_STATE", `Machine state "${state}" is not present in the supplied graph.`);
     this.name = "UnknownStateError";
   }
 }
 
-export class InvalidDefinitionError extends GraphError {
+export class InvalidGraphError extends GraphError {
   readonly issues: ReadonlyArray<string>;
 
   constructor(issues: ReadonlyArray<string>) {
-    super("ERR_INVALID_DEFINITION", `Invalid machine definition: ${issues.join("; ")}`);
-    this.name = "InvalidDefinitionError";
+    super("ERR_INVALID_GRAPH", `Invalid graph: ${issues.join("; ")}`);
+    this.name = "InvalidGraphError";
     this.issues = issues;
   }
 }

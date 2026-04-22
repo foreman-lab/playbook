@@ -6,7 +6,7 @@
  *   https://github.com/foreman-lab/handbook/blob/main/architecture.md
  */
 
-/** Reference to a State within a definition. Scoped by (definitionId, version). */
+/** Reference to a State within a graph. Scoped by (graphId, version). */
 export type StateId = string;
 
 /** An event that can drive a transition. The engine reads only `type`; payload is opaque. */
@@ -18,7 +18,7 @@ export interface Event {
   [extra: string]: unknown;
 }
 
-/** A node in the graph. Identified within a definition. */
+/** A node in the graph. Identified within a graph. */
 export interface State {
   id: StateId;
   label?: string;
@@ -36,7 +36,7 @@ export interface Transition {
 }
 
 /** The full graph: identified by (id, version), composed of states and transitions. */
-export interface MachineDefinition {
+export interface Graph {
   id: string;
   version: string;
   initialState: StateId;
@@ -45,13 +45,13 @@ export interface MachineDefinition {
 }
 
 /**
- * A stateful machine traversing a definition's graph.
+ * A stateful machine traversing a graph.
  * `revision` increments on every successful transition (optimistic concurrency).
  */
 export interface Machine {
   id: string;
-  definitionId: string;
-  definitionVersion: string;
+  graphId: string;
+  graphVersion: string;
   revision: number;
   state: StateId;
   context: Record<string, unknown>;

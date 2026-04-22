@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   type Event,
+  type Graph,
   type Machine,
-  type MachineDefinition,
   NoMatchingTransitionError,
   TerminalStateError,
   transition,
   UnknownStateError,
 } from "../../src/graph/index.js";
 
-const lifecycle: MachineDefinition = {
+const lifecycle: Graph = {
   id: "lifecycle",
   version: "1.0.0",
   initialState: "A",
@@ -23,8 +23,8 @@ const lifecycle: MachineDefinition = {
 function makeMachine(overrides: Partial<Machine> = {}): Machine {
   return {
     id: "m-1",
-    definitionId: lifecycle.id,
-    definitionVersion: lifecycle.version,
+    graphId: lifecycle.id,
+    graphVersion: lifecycle.version,
     revision: 0,
     state: "A",
     context: {},
@@ -69,12 +69,12 @@ describe("transition — happy paths", () => {
     expect(next.context.go).toBe("second");
   });
 
-  it("preserves machine id, definitionId, definitionVersion, meta", () => {
+  it("preserves machine id, graphId, graphVersion, meta", () => {
     const m = makeMachine({ meta: { iter: 1 } });
     const next = transition(m, event("go"), lifecycle);
     expect(next.id).toBe(m.id);
-    expect(next.definitionId).toBe(m.definitionId);
-    expect(next.definitionVersion).toBe(m.definitionVersion);
+    expect(next.graphId).toBe(m.graphId);
+    expect(next.graphVersion).toBe(m.graphVersion);
     expect(next.meta).toEqual({ iter: 1 });
   });
 
@@ -92,7 +92,7 @@ describe("transition — happy paths", () => {
     expect(JSON.stringify(e)).toBe(snapshot);
   });
 
-  it("does not mutate the input definition", () => {
+  it("does not mutate the input graph", () => {
     const snapshot = JSON.stringify(lifecycle);
     transition(makeMachine(), event("go"), lifecycle);
     expect(JSON.stringify(lifecycle)).toBe(snapshot);
@@ -163,7 +163,7 @@ describe("transition — terminal rejection", () => {
 });
 
 describe("transition — unknown state", () => {
-  it("rejects when machine.state is not in definition.states", () => {
+  it("rejects when machine.state is not in graph.states", () => {
     const m = makeMachine({ state: "Ghost" });
     expect(() => transition(m, event("go"), lifecycle)).toThrow(UnknownStateError);
   });

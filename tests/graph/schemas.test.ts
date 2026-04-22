@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   eventSchema,
-  InvalidDefinitionError,
-  machineDefinitionSchema,
+  graphSchema,
+  InvalidGraphError,
   machineSchema,
   stateSchema,
   transitionSchema,
-  validateMachineDefinition,
+  validateGraph,
 } from "../../src/graph/index.js";
 
 describe("eventSchema", () => {
@@ -72,7 +72,7 @@ describe("transitionSchema", () => {
   });
 });
 
-describe("machineDefinitionSchema (basic)", () => {
+describe("graphSchema (basic)", () => {
   const valid = {
     id: "lifecycle",
     version: "1.0.0",
@@ -84,20 +84,20 @@ describe("machineDefinitionSchema (basic)", () => {
     ],
   };
 
-  it("accepts a valid definition", () => {
-    expect(machineDefinitionSchema.safeParse(valid).success).toBe(true);
+  it("accepts a valid graph", () => {
+    expect(graphSchema.safeParse(valid).success).toBe(true);
   });
 
   it("rejects empty states[]", () => {
-    expect(machineDefinitionSchema.safeParse({ ...valid, states: [] }).success).toBe(false);
+    expect(graphSchema.safeParse({ ...valid, states: [] }).success).toBe(false);
   });
 
   it("rejects empty version", () => {
-    expect(machineDefinitionSchema.safeParse({ ...valid, version: "" }).success).toBe(false);
+    expect(graphSchema.safeParse({ ...valid, version: "" }).success).toBe(false);
   });
 });
 
-describe("validateMachineDefinition (cross-field validation)", () => {
+describe("validateGraph (cross-field validation)", () => {
   const base = {
     id: "lifecycle",
     version: "1.0.0",
@@ -106,48 +106,46 @@ describe("validateMachineDefinition (cross-field validation)", () => {
     transitions: [{ from: "A", event: "go", to: "B" }],
   };
 
-  it("returns the parsed definition on success", () => {
-    const result = validateMachineDefinition(base);
+  it("returns the parsed graph on success", () => {
+    const result = validateGraph(base);
     expect(result.id).toBe("lifecycle");
     expect(result.states).toHaveLength(2);
   });
 
   it("rejects duplicate state ids", () => {
     expect(() =>
-      validateMachineDefinition({
+      validateGraph({
         ...base,
         states: [{ id: "A" }, { id: "A" }],
       }),
-    ).toThrow(InvalidDefinitionError);
+    ).toThrow(InvalidGraphError);
   });
 
   it("rejects initialState not in states[]", () => {
-    expect(() => validateMachineDefinition({ ...base, initialState: "Missing" })).toThrow(
-      InvalidDefinitionError,
-    );
+    expect(() => validateGraph({ ...base, initialState: "Missing" })).toThrow(InvalidGraphError);
   });
 
   it("rejects transition.from referencing unknown state", () => {
     expect(() =>
-      validateMachineDefinition({
+      validateGraph({
         ...base,
         transitions: [{ from: "Ghost", event: "go", to: "B" }],
       }),
-    ).toThrow(InvalidDefinitionError);
+    ).toThrow(InvalidGraphError);
   });
 
   it("rejects transition.to referencing unknown state", () => {
     expect(() =>
-      validateMachineDefinition({
+      validateGraph({
         ...base,
         transitions: [{ from: "A", event: "go", to: "Ghost" }],
       }),
-    ).toThrow(InvalidDefinitionError);
+    ).toThrow(InvalidGraphError);
   });
 
   it("collects multiple issues into one error", () => {
     try {
-      validateMachineDefinition({
+      validateGraph({
         ...base,
         initialState: "Missing",
         transitions: [
@@ -157,10 +155,10 @@ describe("validateMachineDefinition (cross-field validation)", () => {
       });
       throw new Error("expected to throw");
     } catch (err) {
-      expect(err).toBeInstanceOf(InvalidDefinitionError);
-      const error = err as InvalidDefinitionError;
+      expect(err).toBeInstanceOf(InvalidGraphError);
+      const error = err as InvalidGraphError;
       expect(error.issues.length).toBeGreaterThanOrEqual(3);
-      expect(error.code).toBe("ERR_INVALID_DEFINITION");
+      expect(error.code).toBe("ERR_INVALID_GRAPH");
     }
   });
 });
@@ -169,8 +167,8 @@ describe("machineSchema", () => {
   it("accepts a valid machine", () => {
     const r = machineSchema.safeParse({
       id: "m-1",
-      definitionId: "lifecycle",
-      definitionVersion: "1.0.0",
+      graphId: "lifecycle",
+      graphVersion: "1.0.0",
       revision: 0,
       state: "A",
       context: {},
@@ -182,8 +180,8 @@ describe("machineSchema", () => {
   it("rejects negative revision", () => {
     const r = machineSchema.safeParse({
       id: "m-1",
-      definitionId: "lifecycle",
-      definitionVersion: "1.0.0",
+      graphId: "lifecycle",
+      graphVersion: "1.0.0",
       revision: -1,
       state: "A",
       context: {},
@@ -195,8 +193,8 @@ describe("machineSchema", () => {
   it("rejects non-integer revision", () => {
     const r = machineSchema.safeParse({
       id: "m-1",
-      definitionId: "lifecycle",
-      definitionVersion: "1.0.0",
+      graphId: "lifecycle",
+      graphVersion: "1.0.0",
       revision: 1.5,
       state: "A",
       context: {},

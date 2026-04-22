@@ -1,21 +1,21 @@
 /**
  * Pure transition function.
  *
- * Given a machine, an event, and the machine's definition, returns the new machine
+ * Given a machine, an event, and the machine's graph, returns the new machine
  * state with:
  *   1. payload stored in context[event.type]   (update step)
- *   2. state advanced per the definition's transition table  (transition step)
+ *   2. state advanced per the graph's transition table  (transition step)
  *   3. revision incremented by 1
  *
  * Throws when the machine is in a terminal state, when no transition rule matches,
- * or when the machine's current state is not present in the definition.
+ * or when the machine's current state is not present in the graph.
  */
 
 import { NoMatchingTransitionError, TerminalStateError, UnknownStateError } from "./errors.js";
-import type { Event, Machine, MachineDefinition, State } from "./types.js";
+import type { Event, Graph, Machine, State } from "./types.js";
 
-export function transition(machine: Machine, event: Event, definition: MachineDefinition): Machine {
-  const currentState = findState(definition, machine.state);
+export function transition(machine: Machine, event: Event, graph: Graph): Machine {
+  const currentState = findState(graph, machine.state);
   if (currentState === null) {
     throw new UnknownStateError(machine.state);
   }
@@ -23,9 +23,7 @@ export function transition(machine: Machine, event: Event, definition: MachineDe
     throw new TerminalStateError(machine.state);
   }
 
-  const rule = definition.transitions.find(
-    (t) => t.from === machine.state && t.event === event.type,
-  );
+  const rule = graph.transitions.find((t) => t.from === machine.state && t.event === event.type);
   if (rule === undefined) {
     throw new NoMatchingTransitionError(machine.state, event.type);
   }
@@ -38,6 +36,6 @@ export function transition(machine: Machine, event: Event, definition: MachineDe
   };
 }
 
-function findState(definition: MachineDefinition, stateId: string): State | null {
-  return definition.states.find((s) => s.id === stateId) ?? null;
+function findState(graph: Graph, stateId: string): State | null {
+  return graph.states.find((s) => s.id === stateId) ?? null;
 }

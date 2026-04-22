@@ -1,13 +1,13 @@
 /**
  * Zod schemas for runtime validation of graph types.
  *
- * The engine validates only at boundaries (definitions on register, events on dispatch).
+ * The engine validates only at boundaries (graphs on register, events on dispatch).
  * Once validated, callers can trust the shape and rely on the type declarations in `types.ts`.
  */
 
 import { z } from "zod";
-import { InvalidDefinitionError } from "./errors.js";
-import type { MachineDefinition } from "./types.js";
+import { InvalidGraphError } from "./errors.js";
+import type { Graph } from "./types.js";
 
 const stateIdSchema = z.string().min(1);
 
@@ -37,7 +37,7 @@ export const transitionSchema = z.object({
   meta: z.record(z.string(), z.unknown()).optional(),
 });
 
-export const machineDefinitionSchema = z
+export const graphSchema = z
   .object({
     id: z.string().min(1),
     version: z.string().min(1),
@@ -85,8 +85,8 @@ export const machineDefinitionSchema = z
 
 export const machineSchema = z.object({
   id: z.string().min(1),
-  definitionId: z.string().min(1),
-  definitionVersion: z.string().min(1),
+  graphId: z.string().min(1),
+  graphVersion: z.string().min(1),
   revision: z.number().int().nonnegative(),
   state: stateIdSchema,
   context: z.record(z.string(), z.unknown()),
@@ -94,16 +94,16 @@ export const machineSchema = z.object({
 });
 
 /**
- * Validates a machine definition.
- * Throws `InvalidDefinitionError` if invalid; returns the parsed value otherwise.
+ * Validates a graph.
+ * Throws `InvalidGraphError` if invalid; returns the parsed value otherwise.
  */
-export function validateMachineDefinition(value: unknown): MachineDefinition {
-  const result = machineDefinitionSchema.safeParse(value);
+export function validateGraph(value: unknown): Graph {
+  const result = graphSchema.safeParse(value);
   if (!result.success) {
     const issues = result.error.issues.map(
       (i) => `${i.path.length > 0 ? i.path.join(".") + ": " : ""}${i.message}`,
     );
-    throw new InvalidDefinitionError(issues);
+    throw new InvalidGraphError(issues);
   }
-  return result.data as MachineDefinition;
+  return result.data as Graph;
 }
