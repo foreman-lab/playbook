@@ -1,28 +1,28 @@
 /** Boundary rules for the Playbook codebase.
  *  Enforces:
  *    1. No cross-module imports between sibling modules.
- *    2. Inside state-machine: domain files stay pure; no circulars.
+ *    2. Inside graph: domain files stay pure; no circulars.
  *  File-pattern based per TS-library conventions.
  */
 
-const DOMAIN_FILES = "^src/state-machine/(types|schemas|transition|errors)\\.ts$";
-const APP_FILES = "^src/state-machine/(engine|catalog|store|create-engine)\\.ts$";
-const ADAPTER_FILES = "^src/state-machine/adapters/";
+const DOMAIN_FILES = "^src/graph/(types|schemas|transition|errors)\\.ts$";
+const APP_FILES = "^src/graph/(engine|catalog|store|create-engine)\\.ts$";
+const ADAPTER_FILES = "^src/graph/adapters/";
 
 export default {
   forbidden: [
     {
       name: "no-cross-module-imports",
       severity: "error",
-      comment: "Siblings of state-machine/orchestrator/transport must not import each other.",
-      from: { path: "^src/state-machine/" },
+      comment: "Siblings of graph/orchestrator/transport must not import each other.",
+      from: { path: "^src/graph/" },
       to: { path: "^src/(orchestrator|transport)/" },
     },
     {
       name: "no-cross-module-imports-reverse",
       severity: "error",
       from: { path: "^src/(orchestrator|transport)/" },
-      to: { path: "^src/state-machine/(?!index\\.ts)" },
+      to: { path: "^src/graph/(?!index\\.ts)" },
     },
     {
       name: "domain-is-pure",
