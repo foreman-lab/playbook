@@ -1,4 +1,10 @@
 {
+  // NOTE: `exactOptionalPropertyTypes` is intentionally OFF.
+  // Zod's `.optional()` infers `T | undefined`, which clashes with that flag
+  // on every optional schema field (State.label, Transition.meta, etc.).
+  // Re-enabling it requires either patching Zod's inference or splitting the
+  // schemas into two (one for input, one for output). Revisit if Zod ships
+  // a fix upstream.
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",

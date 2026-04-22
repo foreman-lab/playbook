@@ -143,6 +143,33 @@ describe("validateGraph (cross-field validation)", () => {
     ).toThrow(InvalidGraphError);
   });
 
+  it("rejects duplicate (from, event) transition rules", () => {
+    expect(() =>
+      validateGraph({
+        ...base,
+        transitions: [
+          { from: "A", event: "go", to: "B" },
+          { from: "A", event: "go", to: "B" },
+        ],
+      }),
+    ).toThrow(InvalidGraphError);
+  });
+
+  it("allows same `event` from different `from` states", () => {
+    // Only the (from, event) pair is the key; the same event name from a
+    // different state is a distinct rule and must be allowed.
+    expect(() =>
+      validateGraph({
+        ...base,
+        states: [{ id: "A" }, { id: "B" }, { id: "C" }],
+        transitions: [
+          { from: "A", event: "go", to: "B" },
+          { from: "B", event: "go", to: "C" },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
   it("collects multiple issues into one error", () => {
     try {
       validateGraph({
