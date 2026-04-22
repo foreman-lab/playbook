@@ -104,9 +104,18 @@ export function runStoreContract(name: string, makeStore: () => Store): void {
         expect(await store.loadMachine(next.id)).toEqual(next);
       });
 
-      it("rejects a stale write (incoming.revision <= stored.revision)", async () => {
+      it("rejects a write equal to stored.revision (replay)", async () => {
         await store.saveMachine(makeMachine({ revision: 0 }));
         await store.saveMachine(makeMachine({ revision: 1, state: "B" }));
+        await expect(
+          store.saveMachine(makeMachine({ revision: 1, state: "B" })),
+        ).rejects.toBeInstanceOf(ConcurrencyConflictError);
+      });
+
+      it("rejects a write older than stored.revision (regression)", async () => {
+        await store.saveMachine(makeMachine({ revision: 0 }));
+        await store.saveMachine(makeMachine({ revision: 1, state: "B" }));
+        await store.saveMachine(makeMachine({ revision: 2, state: "B" }));
         await expect(
           store.saveMachine(makeMachine({ revision: 1, state: "B" })),
         ).rejects.toBeInstanceOf(ConcurrencyConflictError);
@@ -123,6 +132,15 @@ export function runStoreContract(name: string, makeStore: () => Store): void {
     describe("loadMachine", () => {
       it("returns null for unknown id", async () => {
         expect(await store.loadMachine("missing")).toBeNull();
+      });
+
+      it("isolates machines by id — loading m-2 returns m-2, not m-1", async () => {
+        await store.saveMachine(makeMachine({ id: "m-1", state: "A" }));
+        await store.saveMachine(makeMachine({ id: "m-2", state: "A" }));
+        const a = await store.loadMachine("m-1");
+        const b = await store.loadMachine("m-2");
+        expect(a?.id).toBe("m-1");
+        expect(b?.id).toBe("m-2");
       });
     });
 
@@ -143,6 +161,26 @@ export function runStoreContract(name: string, makeStore: () => Store): void {
         g.states.push({ id: "MUTATED" });
         const loaded = await store.loadGraph(g.id, g.version);
         expect(loaded?.states.map((s) => s.id)).toEqual(["A", "B", "Done"]);
+      });
+
+      it("mutating a loaded machine does not affect subsequent loads", async () => {
+        await store.saveMachine(makeMachine({ context: { brief: "X" } }));
+        const first = await store.loadMachine("m-1");
+        if (first === null) throw new Error("expected machine");
+        first.state = "MUTATED";
+        (first.context as Record<string, unknown>).brief = "Y";
+        const second = await store.loadMachine("m-1");
+        expect(second?.state).toBe("A");
+        expect((second?.context as Record<string, unknown>).brief).toBe("X");
+      });
+
+      it("mutating a loaded graph does not affect subsequent loads", async () => {
+        await store.saveGraph(sampleGraph);
+        const first = await store.loadGraph(sampleGraph.id, sampleGraph.version);
+        if (first === null) throw new Error("expected graph");
+        first.states.push({ id: "MUTATED" });
+        const second = await store.loadGraph(sampleGraph.id, sampleGraph.version);
+        expect(second?.states.map((s) => s.id)).toEqual(["A", "B", "Done"]);
       });
 
       it("preserves arbitrary payload shapes in machine.context", async () => {
